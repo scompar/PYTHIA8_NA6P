@@ -4,11 +4,14 @@ Beams:idA	 = 1000822080   # 208Pb (PDG nucleus code)
 Beams:idB	 = 1000822080   # 208Pb as target
 Beams:frameType  = 2	# specify individual beam energies (back-to-back or fixed-target)
 Beams:eB	 = 0.0	# energy for the target: set < mass -> treated as at rest
+
+# --- Random seed
+Random:seed = 2710
  
 # --- heavy-ion (Angantyr) ---
 HeavyIon:mode       = 1 	   # enable heavy-ion machinery (Angantyr is used for ion beams)
-HeavyIon:bWidth     = 14.0         # maximum b
-HeavyIon:bWidthCut  = 0.243        # 0-10% bmax=4.7 fm --> bWidthCut = 0.336 0-5% bmax=3.4 fm --> bWidthCut = 0.243
+#HeavyIon:bWidth     = 14.0         # maximum b
+#HeavyIon:bWidthCut  = 0.243        # 0-10% bmax=4.7 fm --> bWidthCut = 0.336 0-5% bmax=3.4 fm --> bWidthCut = 0.243
 
 #  --- Heavy-flavour/decay handling ---
 HadronLevel:Decay = on

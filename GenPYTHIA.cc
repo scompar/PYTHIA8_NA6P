@@ -2,6 +2,7 @@
 #include "Pythia8Plugins/HepMC3.h"
 
 #include "HepMC3/WriterRootTree.h"
+#include "HepMC3/ReaderRootTree.h"
 
 #include "TH1.h"
 #include "TH2.h"
@@ -99,22 +100,39 @@ int main(int argc, char *argv[]) {
 // Initialize HepMC3 ROOT output
   HepMC3::WriterRootTree writer("GenPYTHIA_HepMC3.root");
   HepMC3::Pythia8ToHepMC3 toHepMC3; // converter object
-   
+ 
   for (int iEvent = 0; iEvent < nEvent; ++iEvent) {
     
     if (!pythia.next()) continue;
               
-// print heavy-ion info     
+// heavy-ion info     
     const Pythia8::HIInfo* hi = pythia.info.hiInfo;
-    if (hi){ 
-      printf("Impact parameter = %3.2f Ncoll = %d Npart = %d\n", hi->b(),hi->nCollTot(),hi->nPartProj()+hi->nPartTarg());
-    }
 
 // Write event to HepMC3 tree    
     HepMC3::GenEvent hepmcevt;
     toHepMC3.fill_next_event(pythia, &hepmcevt);  // convert Pythia to HepMC3
-    writer.write_event(hepmcevt);                 // write directly to ROOT          
+    
+// For heavy-ion collisions (Angantyr) write ion Id, energy and centrality info as event attributes
+    if (hi){ 
+      printf("Impact parameter = %3.2f Ncoll = %d Npart = %d\n", hi->b(),hi->nCollTot(),hi->nPartProj()+hi->nPartTarg());
+      double b      = hi->b();
+      int nCollTot  = hi->nCollTot();
+      int nPartProj = hi->nPartProj();
+      int nPartTarg = hi->nPartTarg();
+      int nPartTot  = nPartProj + nPartTarg;
+      hepmcevt.add_attribute("b",std::make_shared<HepMC3::DoubleAttribute>(b));
+      hepmcevt.add_attribute("nColl", std::make_shared<HepMC3::IntAttribute>(nCollTot));
+      hepmcevt.add_attribute("nPartProj", std::make_shared<HepMC3::IntAttribute>(nPartProj));
+      hepmcevt.add_attribute("nPartTarg", std::make_shared<HepMC3::IntAttribute>(nPartTarg));
+      hepmcevt.add_attribute("nPartTot",  std::make_shared<HepMC3::IntAttribute>(nPartTot));
+    }
+    hepmcevt.add_attribute("ebeam1", std::make_shared<HepMC3::DoubleAttribute>(energy));
+    hepmcevt.add_attribute("ebeam2", std::make_shared<HepMC3::DoubleAttribute>(pythia.settings.parm("Beams:eB")));
+    hepmcevt.add_attribute("idbeam1", std::make_shared<HepMC3::LongAttribute>(pythia.settings.mode("Beams:idA")));
+    hepmcevt.add_attribute("idbeam2", std::make_shared<HepMC3::LongAttribute>(pythia.settings.mode("Beams:idB")));
 
+    writer.write_event(hepmcevt);                 // write directly to ROOT          
+    
     std::vector<int> hadmult((int)hadid.size(),0);
     
 // Loop for event analysis    
@@ -224,7 +242,7 @@ int main(int argc, char *argv[]) {
   hptsigmaplus->GetMean(), hptsigmaplus->GetMeanError(), (hmult[4].GetMean()+hmult[5].GetMean())/deltay, 
   hptxi0->GetMean(), hptxi0->GetMeanError(), (hmult[6].GetMean()+hmult[7].GetMean())/deltay, 
   hpt[8].GetMean(), hpt[8].GetMeanError(), hmult[8].GetMean()/deltay); 
- 
+
 }
 
 bool isDiquark(int ipdg){
