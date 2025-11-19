@@ -58,6 +58,9 @@ int main(int argc, char *argv[]) {
        
   pythia.readFile(inpFile);
   
+  // Register W-184 nucleus before init()
+  pythia.particleData.addParticle(1000741840, "184W", 6, 222, 0, 171.3128);
+  
   char en[30];
   sprintf(en,"Beams:eA = %3.0f",energy);
   pythia.readString(en); 
